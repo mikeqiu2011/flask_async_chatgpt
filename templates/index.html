@@ -1,35 +1,61 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>OpenAI Chat App</title>
-  </head>
-  <body>
-    <h1>OpenAI Chat App</h1>
-    <form>
-      <label for="message">You:</label>
-      <input type="text" name="message" id="message">
-      <button type="submit">Send</button>
-    </form>
-    <hr>
-    <h2>Chat History</h2>
-    <ul id="history">
-    </ul>
 
-    <script>
-      const chatForm = document.querySelector('form');
-      const messageInput = document.querySelector('#message');
-      const historyList = document.querySelector('#history');
+<head>
+  <title>OpenAI Chat App</title>
+</head>
 
-      chatForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        const message = messageInput.value;
-        fetch('/chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ message: message })
-        })
+<body>
+  <h1>OpenAI Chat App</h1>
+  <form>
+    <label for="message">You:</label>
+    <input type="text" name="message" id="message" size="50">
+    <button type="submit" onclick="return checkSensitiveWords()">Send</button>
+  </form>
+  <hr>
+  <h2>Chat History</h2>
+  <ul id="history">
+  </ul>
+
+  <script>
+    const chatForm = document.querySelector('form');
+    const messageInput = document.querySelector('#message');
+    const historyList = document.querySelector('#history');
+
+    function checkSensitiveWords() {
+      const input = messageInput.value
+
+      const chinesePIDRegex = /[1-9]\d{5}(18|19|20)\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])\d{3}[0-9Xx]/g;
+      const chineseMobileRegex = /(\+?0?86\-?)?1[3456789]\d{9}/g;
+      const matches = input.match(chinesePIDRegex) || [];
+      const mobileMatches = input.match(chineseMobileRegex) || [];
+      const allMatches = matches.concat(mobileMatches);
+
+      if (allMatches.length > 0) {
+        const message = `Your message contains sensitive information: ${allMatches.join(", ")}. Do you still want to send it?`;
+        const confirmed = confirm(message);
+        if (!confirmed) {
+          return false
+        } else {
+          console.log('message sent with sensitive info')
+          return true
+        }
+      }
+
+      console.log('Message does not contain sensitive information');
+      return true
+    }
+
+    chatForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const message = messageInput.value;
+      fetch('/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: message })
+      })
         .then(response => response.json())
         .then(data => {
           historyList.innerHTML += `<li><strong>You:</strong> ${message}</li>`;
@@ -38,9 +64,9 @@
         })
         .catch(error => {
           console.error('Error sending message:', error);
-<!--          alert('Error sending message!');-->
         });
-      });
-    </script>
-  </body>
+    });
+  </script>
+</body>
+
 </html>
