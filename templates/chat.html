@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OpenAI Chat App</title>
+  </head>
+  <body>
+    <h1>OpenAI Chat App</h1>
+    <form id="chat-form">
+      <label for="message">You:</label>
+      <input type="text" name="message" id="message">
+      <button type="submit">Send</button>
+    </form>
+    <hr>
+    <h2>Chat History</h2>
+    <ul id="history">
+      {% for message, reply in history %}
+      <li><strong>You:</strong> {{ message }}</li>
+      <li><strong>AI:</strong> {{ reply }}</li>
+      {% endfor %}
+    </ul>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        $("#chat-form").submit(function(event) {
+          event.preventDefault();
+          var message = $("#message").val();
+          $.ajax({
+            type: "POST",
+            url: "/chat",
+            data: {"message": message},
+            success: function(response) {
+              $("#history").append("<li><strong>You:</strong> " + message + "</li>");
+              $("#history").append("<li><strong>AI:</strong> " + response.message + "</li>");
+              $("#message").val("");
+            },
+            error: function() {
+              alert("Error sending message!");
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

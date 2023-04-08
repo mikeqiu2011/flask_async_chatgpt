@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>OpenAI Chat App</title>
+  </head>
+  <body>
+    <h1>OpenAI Chat App</h1>
+    <form>
+      <label for="message">You:</label>
+      <input type="text" name="message" id="message">
+      <button type="submit">Send</button>
+    </form>
+    <hr>
+    <h2>Chat History</h2>
+    <ul id="history">
+    </ul>
+
+    <script>
+      const chatForm = document.querySelector('form');
+      const messageInput = document.querySelector('#message');
+      const historyList = document.querySelector('#history');
+
+      chatForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const message = messageInput.value;
+        fetch('/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message: message })
+        })
+        .then(response => response.json())
+        .then(data => {
+          historyList.innerHTML += `<li><strong>You:</strong> ${message}</li>`;
+          historyList.innerHTML += `<li><strong>AI:</strong> ${data.message}</li>`;
+          messageInput.value = '';
+        })
+        .catch(error => {
+          console.error('Error sending message:', error);
+<!--          alert('Error sending message!');-->
+        });
+      });
+    </script>
+  </body>
+</html>
